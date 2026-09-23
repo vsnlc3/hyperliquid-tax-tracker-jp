@@ -66,6 +66,12 @@ public class BitbankImportService {
             }
         }
 
+        jdbcTemplate.update("""
+                INSERT INTO data_import_statuses (
+                    user_id, dataset, status, reason, import_batch_id
+                ) VALUES (?, ?, 'COMPLETE', NULL, ?)
+                """, userId, dataset.name(), importBatchId);
+
         return new ImportResult(importBatchId, dataset, parsedFile.rows().size(), inserted, duplicates, solRows);
     }
 

@@ -27,16 +27,18 @@ public class BitbankNormalizationService {
     @Transactional
     public NormalizationResult normalize(UUID userId) {
         List<RawRow> rawRows = jdbcTemplate.query("""
-                SELECT id, dataset, external_id, occurred_at_raw, payload
-                FROM raw_data
-                WHERE source = 'BITBANK'
-                ORDER BY imported_at, id
+                SELECT r.id, r.dataset, r.external_id, r.occurred_at_raw, r.payload
+                FROM raw_data r
+                JOIN import_batches b ON b.id = r.import_batch_id
+                WHERE r.source = 'BITBANK'
+                  AND b.user_id = ?
+                ORDER BY r.imported_at, r.id
                 """, (resultSet, rowNum) -> new RawRow(
                 resultSet.getObject("id", UUID.class),
                 resultSet.getString("dataset"),
                 resultSet.getString("external_id"),
                 resultSet.getString("occurred_at_raw"),
-                resultSet.getString("payload")));
+                resultSet.getString("payload")), userId);
 
         int normalizedRows = 0;
         int skippedRows = 0;

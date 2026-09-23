@@ -242,7 +242,7 @@ public class SolanaImportService {
                     transaction_type, asset, gross_amount, net_amount, from_address, to_address,
                     transaction_hash, raw_data_id, normalization_version
                 ) VALUES (?, 'SOLANA', 'SOLANA_TRANSACTIONS', ?, ?, ?, ?, 'SOL', ?, NULL, ?, ?, ?, ?, ?)
-                ON CONFLICT (source, dataset, source_record_id) DO NOTHING
+                ON CONFLICT (source, dataset, source_record_id, normalization_version) DO NOTHING
                 """, userId, sourceRecordId, sqlTimestamp(parsed.blockTime()), rawTimestamp(parsed.blockTime()),
                 incoming ? "TRANSFER_IN" : "TRANSFER_OUT",
                 new BigDecimal(transfer.lamports()).divide(LAMPORTS_PER_SOL),
@@ -262,14 +262,12 @@ public class SolanaImportService {
                     transaction_hash, raw_data_id, normalization_version
                 ) VALUES (?, 'SOLANA', 'SOLANA_TRANSACTIONS', ?, ?, ?, 'FEE', 'SOL', 'SOL', ?,
                     'SOLANA_NETWORK', ?, ?, ?, ?)
-                ON CONFLICT (source, dataset, source_record_id) DO NOTHING
+                ON CONFLICT (source, dataset, source_record_id, normalization_version) DO NOTHING
                 """, userId,
                 parsed.signature() + "#network-fee",
                 sqlTimestamp(parsed.blockTime()),
                 rawTimestamp(parsed.blockTime()),
-                walletAddress,
                 new BigDecimal(parsed.networkFeeLamports()).divide(LAMPORTS_PER_SOL),
-                CoreDomain.FeeType.SOLANA_NETWORK.name(),
                 walletAddress,
                 parsed.signature(),
                 rawDataId,
