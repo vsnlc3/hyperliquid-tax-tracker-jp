@@ -731,6 +731,10 @@ MovingAverageCalculator
 * Purchase Fee
 * 明示設定されたCost Basis Method
 
+Calculatorへの入力では、SOLの取得数量、税務ルール適用後の取得価額、購入Fee、譲渡数量、Timestamp、入力順を区別して保持する。購入Feeの取得価額算入可否は税務ルールで決定し、CalculatorがFee Assetや税務上の扱いを推測して自動加算してはならない。
+
+`TOTAL_AVERAGE`は前年末開始残高と対象年の全取得を合算して平均単価を算出し、対象年の譲渡へ適用する。`MOVING_AVERAGE`はTimestampと明示された入力順に従い、取得ごとに簿価・数量・平均単価を更新し、譲渡ごとに簿価を減少させる。数量不足、負数、時系列を確定できない入力はCalculation Errorとして扱う。
+
 `UNKNOWN`の場合、Cost Basis Calculationは参考値として保持できるが、Calculation Runを`FINAL`にしない。
 
 TaxCalculatorは具体的なCostBasis実装へ直接依存しない。
