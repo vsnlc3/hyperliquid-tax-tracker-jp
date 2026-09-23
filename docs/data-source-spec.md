@@ -420,7 +420,7 @@ reason
 * Perpetual `closedPnl`のJPY評価に必要なRate
 * FeeのJPY評価に必要なRate
 
-Step 0でMVPの第一候補をCoinGecko Public APIへ選定する。認証なしの公開Endpointで、以下を使用する。
+Step 0でMVPの第一候補をCoinGeckoのDemo / Keyless APIへ選定する。利用プランまたはEndpointの認証要求に対応できるよう、API Keyは設定値として任意に指定できるものとし、KeyをRaw DataやDomain Modelへ保存しない。以下を使用する。
 
 ```text
 SOL/JPY  : coin id = solana
@@ -431,7 +431,7 @@ vs_currency = jpy
 
 Responseの`prices`は`[timestampMilliseconds, price]`の配列であり、Price SourceとResponse Timestampを保存する。2026-09-23の実照会で、SOL/JPYとUSDC/JPYの双方について対象期間の履歴を取得できた。
 
-公式仕様上、Market ChartのHourly取得は全プランで利用可能となっており、Rangeは1回あたり最大100日が目安である。90日を超える範囲では自動的に日次（00:00 UTC）となるため、対象年度の履歴は期間分割し、取得粒度とCoverageを記録する。公開プランのRate Limitは30 calls/minuteとして扱い、Retry・Backoff・キャッシュをProvider Adapter側で管理する。
+公式仕様上、Market ChartのRangeは`hourly`を明示でき、1回あたり最大100日が契約上の取得単位となる。対象年度など100日を超える履歴は期間分割し、各Requestの取得粒度とCoverageを記録する。Rate Limitや履歴期間の上限はプランにより異なるため、固定値として税務計算へ持ち込まず、Provider Adapterの設定とCoverage判定で扱う。認証・料金プランの変更で取得できない場合はImport Errorまたは`FAILED`/`PARTIAL`とする。
 
 Provider固有仕様をDomain Modelへ直接埋め込まず、差し替え可能なPriceProvider Adapterを経由する。
 

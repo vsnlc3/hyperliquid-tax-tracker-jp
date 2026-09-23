@@ -11,3 +11,9 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+
+coingecko:
+  base-url: ${COINGECKO_BASE_URL:https://api.coingecko.com/api/v3}
+  api-key: ${COINGECKO_API_KEY:}
+  sol-asset-id: ${COINGECKO_SOL_ASSET_ID:solana}
+  usdc-asset-id: ${COINGECKO_USDC_ASSET_ID:usd-coin}

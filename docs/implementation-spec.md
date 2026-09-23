@@ -390,7 +390,7 @@ createdAt
 
 Tax EventまたはCalculation Runから使用したPriceSnapshotを追跡できるようにする。
 
-MVPの初期ProviderはCoinGecko Public APIとするが、`JpyRateResolver`はProvider Adapter経由で利用し、Provider固有のEndpointやCoin IDをTax Calculatorへ持ち込まない。
+MVPの初期ProviderはCoinGecko Demo / Keyless APIとする。認証が必要な利用プランにも対応できるようAPI Keyは設定値として扱い、`JpyRateResolver`はProvider Adapter経由で利用する。Provider固有のEndpointやCoin IDをTax Calculatorへ持ち込まない。
 
 ### 4.11 CostBasisSetting
 
@@ -694,7 +694,9 @@ JPY Value + PriceSnapshot
 
 Price Source、Rate Timestamp、PriceSnapshot IDを保存する。
 
-Rate不足、Timestamp不明、Source不明の場合はCalculation Errorとし、確定扱いのCalculation Runを作成しない。
+`PriceProvider` Adapterを介してProviderを差し替え可能にする。MVPの初期ProviderはCoinGeckoとし、100日を超える履歴はProvider契約に従って分割取得する。ProviderのRaw Responseを`RawData`へ保存し、Pointごとに`PriceSnapshot`を作成する。
+
+Price PointのTimestampはProviderが返したUTC時刻をそのまま保持する。Transaction Timestampに一致するPointがない場合、Hourly Pointの選択や補間を自動で行わず、`Missing Price`をCalculation Errorとして扱う。Rate不足、Timestamp不明、Source不明の場合は確定扱いのCalculation Runを作成しない。
 
 ---
 
