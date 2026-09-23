@@ -307,7 +307,7 @@ TransferLink
 
 id
 outgoingTransactionId
-incomingTransactionId
+incomingTransactionId（`UNMATCHED`ではnull）
 matchStatus
 matchScore
 matchedBy
@@ -324,6 +324,8 @@ REJECTED
 ```
 
 一つのOutgoing Transactionに、複数のIncoming Transactionを`MATCHED`として紐付けてはならない。
+
+`UNMATCHED`はIncoming Transactionを確定できない状態として保持する。`grossAmount`と`netAmount`は候補値として区別して扱い、Fee AssetやFeeの意味が未確定のまま手数料差額を自動補正してはならない。具体的な時間窓・数量許容差は未確定のため、確定値として実装へ埋め込まない。
 
 ### 4.9 TaxEvent
 
