@@ -6,6 +6,8 @@ spring:
     username: ${DB_USERNAME:app}
     password: ${DB_PASSWORD:app}
     driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
 
 server:
   port: ${SERVER_PORT:8080}
