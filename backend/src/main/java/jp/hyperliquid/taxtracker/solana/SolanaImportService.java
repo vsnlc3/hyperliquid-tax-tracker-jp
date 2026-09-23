@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -180,7 +181,7 @@ public class SolanaImportService {
             preparedStatement.setObject(1, rawDataId);
             preparedStatement.setString(2, parsed.signature());
             preparedStatement.setObject(3, parsed.slot());
-            preparedStatement.setObject(4, parsed.blockTime());
+            preparedStatement.setObject(4, sqlTimestamp(parsed.blockTime()));
             preparedStatement.setString(5, parsed.status().name());
             preparedStatement.setString(6, signerAddresses);
             preparedStatement.setString(7, parsed.version());
@@ -242,7 +243,7 @@ public class SolanaImportService {
                     transaction_hash, raw_data_id, normalization_version
                 ) VALUES (?, 'SOLANA', 'SOLANA_TRANSACTIONS', ?, ?, ?, ?, 'SOL', ?, NULL, ?, ?, ?, ?, ?)
                 ON CONFLICT (source, dataset, source_record_id) DO NOTHING
-                """, userId, sourceRecordId, parsed.blockTime(), rawTimestamp(parsed.blockTime()),
+                """, userId, sourceRecordId, sqlTimestamp(parsed.blockTime()), rawTimestamp(parsed.blockTime()),
                 incoming ? "TRANSFER_IN" : "TRANSFER_OUT",
                 new BigDecimal(transfer.lamports()).divide(LAMPORTS_PER_SOL),
                 transfer.sourceAddress(), transfer.destinationAddress(), parsed.signature(), rawDataId,
@@ -264,7 +265,7 @@ public class SolanaImportService {
                 ON CONFLICT (source, dataset, source_record_id) DO NOTHING
                 """, userId,
                 parsed.signature() + "#network-fee",
-                parsed.blockTime(),
+                sqlTimestamp(parsed.blockTime()),
                 rawTimestamp(parsed.blockTime()),
                 walletAddress,
                 new BigDecimal(parsed.networkFeeLamports()).divide(LAMPORTS_PER_SOL),
@@ -281,7 +282,7 @@ public class SolanaImportService {
                 VALUES (?, 'SOLANA', 'SOLANA_TRANSACTIONS', ?, ?)
                 RETURNING id
                 """, (resultSet, rowNum) -> resultSet.getObject("id", UUID.class),
-                userId, requestedFrom, requestedTo);
+                userId, sqlTimestamp(requestedFrom), sqlTimestamp(requestedTo));
     }
 
     private Optional<UUID> insertRawData(
@@ -299,7 +300,7 @@ public class SolanaImportService {
                 RETURNING id
                 """, preparedStatement -> {
             preparedStatement.setString(1, signature);
-            preparedStatement.setObject(2, blockTime);
+            preparedStatement.setObject(2, sqlTimestamp(blockTime));
             preparedStatement.setString(3, rawTimestamp(blockTime));
             preparedStatement.setString(4, payload);
             preparedStatement.setString(5, hash);
@@ -329,7 +330,8 @@ public class SolanaImportService {
                     user_id, dataset, requested_from, requested_to, actual_from, actual_to,
                     status, reason, import_batch_id
                 ) VALUES (?, 'SOLANA_TRANSACTIONS', ?, ?, ?, ?, ?, ?, ?)
-                """, userId, requestedFrom, requestedTo, actualFrom, actualTo, status.name(), reason, importBatchId);
+                """, userId, sqlTimestamp(requestedFrom), sqlTimestamp(requestedTo),
+                sqlTimestamp(actualFrom), sqlTimestamp(actualTo), status.name(), reason, importBatchId);
     }
 
     private WalletRow wallet(UUID walletId, UUID userId) {
@@ -363,6 +365,10 @@ public class SolanaImportService {
             return null;
         }
         return Instant.ofEpochSecond(node.longValue());
+    }
+
+    private static Timestamp sqlTimestamp(Instant instant) {
+        return instant == null ? null : Timestamp.from(instant);
     }
 
     private static String text(JsonNode node, String field) {

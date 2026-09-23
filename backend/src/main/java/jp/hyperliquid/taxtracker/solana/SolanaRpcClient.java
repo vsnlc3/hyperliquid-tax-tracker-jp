@@ -70,9 +70,19 @@ public class SolanaRpcClient {
                 if (attempt == MAX_ATTEMPTS) {
                     break;
                 }
+                waitBeforeRetry(attempt);
             }
         }
         throw new SolanaRpcException(method + " failed after " + MAX_ATTEMPTS + " attempts", lastException);
+    }
+
+    private static void waitBeforeRetry(int attempt) {
+        try {
+            Thread.sleep(250L * attempt);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new SolanaRpcException("Retry interrupted", exception);
+        }
     }
 
     public static class SolanaRpcException extends RuntimeException {
