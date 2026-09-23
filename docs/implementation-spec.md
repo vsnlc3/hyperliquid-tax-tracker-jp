@@ -772,6 +772,10 @@ TaxCalculatorは具体的なCostBasis実装へ直接依存しない。
 
 旧Calculation Runを上書きせず、旧結果と新結果を区別できるようにする。
 
+Tax Calculationは、SOL Exchange PnL、Perpetual `closedPnl`、Funding Received、Funding Paid、Feeを別集計する。`closedPnl`へFeeやFundingを自動加算しない。FeeをCalculated PnLへ反映する場合は、税務分類済みの明示的な調整値として入力し、Fee Assetや税務上の扱いを推測して加算しない。
+
+Calculation Runの判定は`CalculationRunEvaluator`へ分離する。必須Datasetの`PARTIAL`/`FAILED`、Missing Price、未解決Tax Event Review、未解決Calculation ErrorまたはImport Error、`UNKNOWN` Cost Basis Methodがあれば`BLOCKED`とする。阻害要因がなく、ユーザー確認前または計算途中なら`DRAFT`、確定要求があり全条件を満たす場合だけ`FINAL`とする。Transaction Classification Reviewが存在するだけでは`BLOCKED`にしない。
+
 ---
 
 ## 12. Needs Review / Error Handling
