@@ -60,6 +60,8 @@ class CoreDomainTest {
                 "phantom",
                 "txid-1",
                 UUID.randomUUID(),
+                null,
+                "bitbank-v1",
                 null);
 
         assertThat(transaction.grossAmount()).isNotEqualTo(transaction.netAmount());

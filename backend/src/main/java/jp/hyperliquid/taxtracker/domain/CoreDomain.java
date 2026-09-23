@@ -204,6 +204,8 @@ public final class CoreDomain {
             String toAddress,
             String transactionHash,
             UUID rawDataId,
+            UUID relatedTransactionId,
+            String normalizationVersion,
             Instant createdAt) {
     }
 
