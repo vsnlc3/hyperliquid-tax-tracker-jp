@@ -138,6 +138,13 @@ public final class CoreDomain {
         IMPORT
     }
 
+    public enum SolanaTransactionStatus {
+        SUCCESS,
+        FAILED,
+        NOT_FOUND,
+        UNKNOWN
+    }
+
     public record Wallet(
             UUID id,
             UUID userId,
@@ -214,9 +221,11 @@ public final class CoreDomain {
             String signature,
             Long slot,
             Instant blockTime,
+            SolanaTransactionStatus status,
             String version,
             Set<String> signerAddresses,
             Set<SystemTransfer> systemTransfers,
+            Set<TokenTransfer> tokenTransfers,
             Long networkFeeLamports,
             Long priorityFeeLamports,
             UUID rawDataId) {
@@ -226,6 +235,15 @@ public final class CoreDomain {
             String sourceAddress,
             String destinationAddress,
             Long lamports) {
+    }
+
+    public record TokenTransfer(
+            String sourceAddress,
+            String destinationAddress,
+            String mint,
+            BigDecimal rawAmount,
+            Integer decimals,
+            BigDecimal uiAmount) {
     }
 
     public record HyperliquidFill(

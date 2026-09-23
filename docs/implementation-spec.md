@@ -233,15 +233,19 @@ SolanaTransaction
 signature
 slot
 blockTime
+status
 version
 signerAddresses
 systemTransfers
+tokenTransfers
 networkFeeLamports
 priorityFeeLamports
 rawDataId
 ```
 
 `networkFeeLamports`はRPC `meta.fee`の総額を保持する。`priorityFeeLamports`はResponseから安全に分離できない場合はnullとし、総額との差額を推測値として保存しない。System TransferはTransaction全体の合計ではなく、Instruction単位でSource、Destination、Amountを保持する。
+
+`status`は`SUCCESS`、`FAILED`、`NOT_FOUND`、`UNKNOWN`を区別する。Native SOLのSystem TransferとSPL Token Transferは別構造として保存し、MVPのUnifiedTransactionへ正規化するのは登録Walletに関係するNative SOL TransferとNetwork Feeのみとする。Token TransferはRaw DataおよびSolana固有Recordとして保持し、入金Assetを追加しない。
 
 ### 4.6 Transaction Type
 

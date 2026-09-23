@@ -138,6 +138,26 @@ Solana公式RPCの`getTransaction`では、`blockTime`が`null`になり得る�
 
 RPC Responseの`meta.fee`は総Network Feeとして保持する。今回のTransaction群ではCompute Budget Instructionが確認できず、Responseにも独立したPriority Fee Fieldはないため、`priorityFee`を`meta.fee`との差額から推測しない。Priority Feeを確定できない場合は不明値として保持する。
 
+### 4.2.1 Wallet履歴の取得契約
+
+完成アプリではTransaction Signatureをユーザーに毎回入力させず、登録Wallet Addressを起点に履歴を取得する。MVPの履歴取得はSolana Mainnet JSON-RPCの[`getSignaturesForAddress`](https://solana.com/docs/rpc/http/getsignaturesforaddress)でSignature一覧を取得し、各Signatureを[`getTransaction`](https://solana.com/docs/rpc/http/gettransaction)へ渡してTransaction本体を取得する構成とする。
+
+`getSignaturesForAddress`のResponseでは、少なくとも以下をRaw Dataとして保持する。
+
+```text
+signature
+slot
+err
+blockTime
+confirmationStatus
+```
+
+PaginationはRPCの`before` Cursorを使い、取得済みSignatureを再利用できるようにする。`limit`、`commitment`、対象期間の`before`／`until`境界はProvider設定および実レスポンスで検証し、Data Contract確認なしに固定値を税務仕様へ持ち込まない。取得結果が対象期間を覆うまで継続し、ページ途中のRPC失敗、Transaction本体が取得できないSignature、`blockTime`欠損はCoverage判定へ反映する。
+
+`getTransaction`では、対象Transactionの`slot`、`blockTime`、`meta.err`、`meta.fee`、`transaction.message`、Inner Instruction、`version`を保持する。JSON Parsed形式を優先するが、Providerが返す未解釈InstructionもRaw Dataとして失わない。`maxSupportedTransactionVersion`は実装側の対応Versionと合わせて設定し、未対応Versionを成功データとして解釈しない。
+
+Wallet履歴取得のCoverageはSignature一覧だけでなく、対象SignatureのTransaction本体と必要なTransfer解析まで含めて判定する。対象期間の取得処理を完了し、取得不能なSignatureや未解決のRPC失敗がない場合は`COMPLETE`、一部だけ取得・解析できない場合は`PARTIAL`、処理全体が失敗して利用可能なDataがない場合は`FAILED`とする。
+
 ### 4.3 主な用途
 
 #### bitbank → Phantom
@@ -155,7 +175,7 @@ Providerは以下の候補から、実データ・履歴期間・Rate Limitを�
 * Solana RPC
 * Blockchain Data Provider API
 
-Step 0では、認証不要のSolana Mainnet JSON-RPC `getTransaction`をMVPの第一候補とする。Provider固有のRate Limitや長期履歴の取得可否は設定へ切り出し、Normalized Dataへ直接埋め込まない。
+Step 0で確認した範囲では、認証不要のSolana Mainnet JSON-RPCをMVPの第一候補とする。Wallet履歴は`getSignaturesForAddress`、Transaction本体は`getTransaction`を使用する。Provider固有のRate Limit、Retry、長期履歴の取得可否は設定・Coverage判定へ切り出し、Normalized Dataへ直接埋め込まない。
 
 Provider固有のレスポンスを税務計算へ直接渡さず、Raw Dataとして保存する。
 
