@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: hyperliquid-tax-tracker-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/hyperliquid_tax_tracker}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:app}
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: ${SERVER_PORT:8080}

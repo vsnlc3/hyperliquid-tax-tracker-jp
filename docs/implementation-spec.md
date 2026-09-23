@@ -71,27 +71,29 @@ JpyRateResolver  CostBasisCalculator
 
 ## 3. Backend / Frontend / Database
 
-Backendの候補:
+MVPで採用するBackend:
 
 ```text
-Java
-Spring Boot
+Java 21+
+Spring Boot 3.5.x
+Maven
 ```
 
-Frontendの候補:
+MVPで採用するFrontend:
 
 ```text
-Next.js
+Next.js 15.x
 TypeScript
 ```
 
-Databaseの候補:
+MVPで採用するDatabase:
 
 ```text
-PostgreSQL
+PostgreSQL 16
+Docker Compose
 ```
 
-候補からの最終選定はData Contract確認後、Step 1で確定する。
+Step 1で上記の技術スタックを確定する。外部Data Contractや税務ルールを各FrameworkのDomain Modelへ直接埋め込まない。
 
 Backendの責務:
 
