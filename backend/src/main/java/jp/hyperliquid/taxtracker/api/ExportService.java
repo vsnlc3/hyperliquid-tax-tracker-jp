@@ -3,6 +3,7 @@ package jp.hyperliquid.taxtracker.api;
 import jp.hyperliquid.taxtracker.domain.CoreDomain;
 import jp.hyperliquid.taxtracker.review.ClassificationReviewService;
 import jp.hyperliquid.taxtracker.review.DataErrorService;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,16 +17,19 @@ public class ExportService {
     private final CoverageQueryService coverageQueryService;
     private final ClassificationReviewService reviewService;
     private final DataErrorService errorService;
+    private final JdbcTemplate jdbcTemplate;
 
     public ExportService(
             TimelineService timelineService,
             CoverageQueryService coverageQueryService,
             ClassificationReviewService reviewService,
-            DataErrorService errorService) {
+            DataErrorService errorService,
+            JdbcTemplate jdbcTemplate) {
         this.timelineService = timelineService;
         this.coverageQueryService = coverageQueryService;
         this.reviewService = reviewService;
         this.errorService = errorService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public String transactionsCsv(UUID userId, Instant from, Instant to) {
@@ -63,8 +67,37 @@ public class ExportService {
     }
 
     public String annualSummaryCsv(UUID userId, int targetYear) {
-        return "target_year,summary_type,value\n" + targetYear + ",NOTE," + quote(
-                "Tax calculation summary is available from Calculation Run") + "\n";
+        StringBuilder csv = new StringBuilder(
+                "target_year,calculation_run_id,status,cost_basis_method,blocked_reasons,event_type,total_jpy_value,total_profit_loss_jpy\n");
+        List<SummaryRow> rows = jdbcTemplate.query("""
+                SELECT cr.id, cr.status, cr.cost_basis_method, cr.blocked_reasons,
+                       te.event_type,
+                       COALESCE(SUM(te.jpy_value), 0) AS total_jpy_value,
+                       COALESCE(SUM(te.profit_loss_jpy), 0) AS total_profit_loss_jpy
+                FROM calculation_runs cr
+                LEFT JOIN tax_events te ON te.calculation_run_id = cr.id
+                WHERE cr.user_id = ? AND cr.target_year = ?
+                GROUP BY cr.id, cr.status, cr.cost_basis_method, cr.blocked_reasons, te.event_type
+                ORDER BY cr.calculated_at DESC, te.event_type
+                LIMIT 100
+                """, (resultSet, rowNum) -> new SummaryRow(
+                resultSet.getObject("id", UUID.class),
+                resultSet.getString("status"),
+                resultSet.getString("cost_basis_method"),
+                resultSet.getString("blocked_reasons"),
+                resultSet.getString("event_type"),
+                resultSet.getBigDecimal("total_jpy_value"),
+                resultSet.getBigDecimal("total_profit_loss_jpy")), userId, targetYear);
+        if (rows.isEmpty()) {
+            csv.append(csvRow(targetYear, "", "", "", "", "NO_CALCULATION_RUN", "", ""));
+            return csv.toString();
+        }
+        for (SummaryRow row : rows) {
+            csv.append(csvRow(targetYear, row.runId(), row.status(), row.costBasisMethod(),
+                    row.blockedReasons(), row.eventType() == null ? "NO_TAX_EVENTS" : row.eventType(),
+                    row.totalJpyValue(), row.totalProfitLossJpy()));
+        }
+        return csv.toString();
     }
 
     private static String csvRow(Object... values) {
@@ -84,5 +117,15 @@ public class ExportService {
         }
         String text = String.valueOf(value);
         return "\"" + text.replace("\"", "\"\"") + "\"";
+    }
+
+    private record SummaryRow(
+            UUID runId,
+            String status,
+            String costBasisMethod,
+            String blockedReasons,
+            String eventType,
+            java.math.BigDecimal totalJpyValue,
+            java.math.BigDecimal totalProfitLossJpy) {
     }
 }
