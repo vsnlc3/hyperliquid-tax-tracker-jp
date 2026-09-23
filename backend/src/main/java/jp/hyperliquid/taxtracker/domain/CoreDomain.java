@@ -96,6 +96,16 @@ public final class CoreDomain {
         FEE
     }
 
+    public enum TransactionClassification {
+        SWAP,
+        TRANSFER,
+        DEPOSIT,
+        WITHDRAWAL,
+        FEE,
+        IGNORE,
+        OTHER
+    }
+
     public enum TaxEventType {
         ASSET_ACQUISITION,
         ASSET_DISPOSAL,

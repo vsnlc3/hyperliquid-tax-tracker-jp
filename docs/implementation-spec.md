@@ -660,6 +660,8 @@ IGNORE
 OTHER
 ```
 
+既知の`UnifiedTransaction.transactionType`は、`BUY`/`SELL`/`SWAP`を`SWAP`、`TRANSFER_IN`/`TRANSFER_OUT`を`TRANSFER`、`DEPOSIT`を`DEPOSIT`、`WITHDRAWAL`を`WITHDRAWAL`、`FEE`を`FEE`へ分類する。`PERP_FILL`と`FUNDING`は`OTHER`として保持し、元のTransaction Typeを失わない。未知または必要項目不足の場合はTransaction Classification Reviewを作成する。
+
 ### Tax Event Classification
 
 ```text
@@ -673,6 +675,8 @@ FEE
 ```
 
 `Missing Price`、`Partial History`、`Calculation Error`はTransaction Typeとして保存しない。
+
+Tax Event ClassificationはTransaction Classificationの結果とは別に実行する。`BUY`は`ASSET_ACQUISITION`、`SELL`は`ASSET_DISPOSAL`、確定したTransferは`SELF_TRANSFER`、Spot交換は`ASSET_DISPOSAL`と`ASSET_ACQUISITION`へ分ける。Perpetualの`closedPnl`、Funding、Feeはそれぞれ独立Eventとして生成する。税務上の扱いが未確定なEventは`TaxStatus = NEEDS_REVIEW`とし、ErrorやCoverage状態をTax Event Typeへ設定しない。
 
 ---
 
