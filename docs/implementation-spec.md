@@ -786,6 +786,8 @@ TaxCalculatorは具体的なCostBasis実装へ直接依存しない。
 
 これらはCalculation Run Statusとして使用しない。Calculation Runを`BLOCKED`へ遷移させる必要がある場合は、該当状態を`blockedReasons`へ記録する。
 
+内部保存では、Classification Review、Data Error、Recalculation Requestを別Recordとして管理する。Classification Reviewは`TRANSACTION_CLASSIFICATION`と`TAX_EVENT_CLASSIFICATION`を区別し、Data Errorは`DATA_COVERAGE`、`CALCULATION`、`IMPORT`を区別する。Reviewの解決時は`user_classifications`へ修正前後と理由を追加し、元Recordを上書きしない。修正・Error解消後の計算は既存Calculation Runを更新せず、Recalculation Requestを経由して新しいRunを作成する。
+
 対象例:
 
 ```text

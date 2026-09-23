@@ -144,10 +144,25 @@ public final class CoreDomain {
         TAX_EVENT_CLASSIFICATION
     }
 
+    public enum ReviewStatus {
+        OPEN,
+        RESOLVED
+    }
+
     public enum ErrorType {
         DATA_COVERAGE,
         CALCULATION,
         IMPORT
+    }
+
+    public enum ErrorStatus {
+        OPEN,
+        RESOLVED
+    }
+
+    public enum RecalculationStatus {
+        PENDING,
+        PROCESSED
     }
 
     public enum SolanaTransactionStatus {
@@ -438,6 +453,41 @@ public final class CoreDomain {
             String reason,
             UUID importBatchId,
             Instant checkedAt) {
+    }
+
+    public record ClassificationReview(
+            UUID id,
+            UUID userId,
+            ReviewType reviewType,
+            UUID targetId,
+            ReviewStatus status,
+            String reason,
+            Instant createdAt,
+            Instant resolvedAt) {
+    }
+
+    public record DataError(
+            UUID id,
+            UUID userId,
+            ErrorType errorType,
+            Dataset dataset,
+            UUID targetId,
+            String code,
+            String message,
+            ErrorStatus status,
+            Instant createdAt,
+            Instant resolvedAt) {
+    }
+
+    public record RecalculationRequest(
+            UUID id,
+            UUID userId,
+            String sourceType,
+            UUID sourceId,
+            String reason,
+            RecalculationStatus status,
+            Instant createdAt,
+            Instant processedAt) {
     }
 
     public record CalculationRun(
