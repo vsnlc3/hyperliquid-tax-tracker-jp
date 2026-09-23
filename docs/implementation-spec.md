@@ -221,6 +221,26 @@ createdAt
 
 `grossAmount`、`netAmount`、`feeAmount`はTransferで使用する。Spot、Purchase、Perpetualなどでは`assetFrom`、`assetTo`、`amountFrom`、`amountTo`を使用する。
 
+Source TimestampにTimezoneが明示されない場合は、Raw Dataの原文とTimezone確度を保持し、`occurredAt`へ未確認のTimezoneを黙って適用しない。Fee Asset不明、gross/net不明、Priority Fee不明もNormalized Dataで表現できるようにする。
+
+### 4.5.1 SolanaTransaction
+
+```text
+SolanaTransaction
+
+signature
+slot
+blockTime
+version
+signerAddresses
+systemTransfers
+networkFeeLamports
+priorityFeeLamports
+rawDataId
+```
+
+`networkFeeLamports`はRPC `meta.fee`の総額を保持する。`priorityFeeLamports`はResponseから安全に分離できない場合はnullとし、総額との差額を推測値として保存しない。System TransferはTransaction全体の合計ではなく、Instruction単位でSource、Destination、Amountを保持する。
+
 ### 4.6 Transaction Type
 
 ```text
@@ -260,13 +280,19 @@ HyperliquidLedgerUpdate
 
 追加項目:
 
-* Fill: side、dir、size、price、order ID、hash
+* Fill: coin、side、dir、size、price、startPosition、crossed、order ID、`tid`、hash、`twapId`
 * Closed PnL: Fill関連ID、`closedPnl`、PnL Asset
-* Fee: Fee Type、Fee Asset、Fee Amount、関連Fill/Ledger ID
-* Funding: Funding Rate、Funding Amount、Asset
-* Ledger: Deposit、Withdrawal、Transfer、Ledger Update Type
+* Fee: Fee Type、Fee Asset、Fee Amount、関連Fill/Ledger ID。Fillの`fee`と`feeToken`を別Fee Recordへ正規化する
+* Funding: `type`、Funding Rate、Funding Amount、`szi`、Asset、Hash。Hashがゼロ値でも一意性をHashだけに依存しない
+* Ledger: Deposit、Withdrawal、Transfer、Ledger Update Type、`token`、`amount`、`usdcValue`、`user`、`destination`、`fee`、`nativeTokenFee`、`nonce`、`feeToken`
 
 `closedPnl`、Fee、Fundingを相互に合算済みと仮定しない。
+
+### 4.7.1 Spot Metadataの扱い
+
+Spot Pair、Token ID、Decimalsは外部MetadataのSnapshotとRaw Dataから解決し、`SOL/USDC`のPairやToken IDをコードへ固定しない。Metadataで確認できないAsset同一性を、名称の類似だけで補完してはならない。
+
+2026-09-23のData Contract確認では、Token `USOL`（index `254`）とPair `@156`（tokens `[254, 0]`、Token `0`はUSDC）を確認した。Pair Index・Token MetadataはSnapshotで解決し、コードへ固定しない。`USOL`を税務上SOLと同一Assetと扱うかは`tax-spec.md`の`要確認`事項であり、Data Contractの同一経路確認だけで税務分類を確定しない。
 
 ### 4.8 TransferLink
 
@@ -346,10 +372,17 @@ currency
 price
 priceTimestamp
 source
+providerAssetId
+requestFrom
+requestTo
+interval
+rawDataId
 createdAt
 ```
 
 Tax EventまたはCalculation Runから使用したPriceSnapshotを追跡できるようにする。
+
+MVPの初期ProviderはCoinGecko Public APIとするが、`JpyRateResolver`はProvider Adapter経由で利用し、Provider固有のEndpointやCoin IDをTax Calculatorへ持ち込まない。
 
 ### 4.11 CostBasisSetting
 

@@ -25,6 +25,8 @@ v1の入金資産はSOLに限定する。Perpetualの取引銘柄は限定しな
 
 自己資金移動と売買・交換を明確に分離する。
 
+HyperliquidのData Contract上、SOL入金後にUSOLおよび`@156`として表現される場合がある。これは技術上のAsset表現であり、SOLとUSOLの税務上の同一性や交換扱いを確定するものではない。
+
 ---
 
 ## 3. 税務仕様の確定度
@@ -46,6 +48,7 @@ v1の入金資産はSOLに限定する。Perpetualの取引銘柄は限定しな
 * Funding Received / Paidの税務上の扱い
 * 各Feeの必要経費、取得価額、譲渡損益への反映方法
 * USDC取得・使用時の税務上の扱い
+* Solana上のSOLがHyperliquid上でUSOLとして表現される場合の税務上のAsset同一性、入出庫・交換の扱い
 
 未確定の項目は、計算結果に`NEEDS_REVIEW`を付与する。
 
