@@ -3,6 +3,7 @@ package jp.hyperliquid.taxtracker.domain;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +45,7 @@ public final class CoreDomain {
         HYPERLIQUID_FILLS,
         HYPERLIQUID_FUNDING,
         HYPERLIQUID_LEDGER,
+        HYPERLIQUID_SPOT_METADATA,
         PRICE_DATA
     }
 
@@ -313,6 +315,32 @@ public final class CoreDomain {
             Long nonce,
             String feeAsset,
             Instant occurredAt) {
+    }
+
+    public record HyperliquidSpotMetadata(
+            UUID id,
+            UUID rawDataId,
+            List<HyperliquidSpotToken> tokens,
+            List<HyperliquidSpotPair> pairs,
+            Instant occurredAt) {
+    }
+
+    public record HyperliquidSpotToken(
+            int tokenIndex,
+            String name,
+            Integer sizeDecimals,
+            Integer weiDecimals,
+            String tokenId,
+            boolean canonical,
+            String fullName) {
+    }
+
+    public record HyperliquidSpotPair(
+            int pairIndex,
+            String name,
+            int baseTokenIndex,
+            int quoteTokenIndex,
+            boolean canonical) {
     }
 
     public record TransferLink(

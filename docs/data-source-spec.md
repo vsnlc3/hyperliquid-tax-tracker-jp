@@ -353,6 +353,8 @@ SpotのAsset ID、Token、Pair、Decimalsを取得する。
 
 `universe`には`name = @156`、`tokens = [254, 0]`のPairがあり、これが今回確認できたUSOL/USDC相当のPairである。UI表示名を推測せず、Pair IndexとToken MetadataをRaw Data・Snapshotへ保存する。
 
+Spot Metadataは`HYPERLIQUID_SPOT_METADATA` Datasetとして、`tokens`と`universe`を一つのRaw ResponseからSnapshot保存する。Spot MetadataのCoverageは、対象取得時点のSnapshotを取得できたかで判定し、FillやLedgerの履歴Coverageとは混同しない。
+
 Raw API Responseは全Datasetで保存する。`closedPnl`へFeeやFundingが含まれると仮定しない。
 
 ---
@@ -470,6 +472,7 @@ SOLANA_TRANSACTIONS
 HYPERLIQUID_FILLS
 HYPERLIQUID_FUNDING
 HYPERLIQUID_LEDGER
+HYPERLIQUID_SPOT_METADATA
 PRICE_DATA
 ```
 
